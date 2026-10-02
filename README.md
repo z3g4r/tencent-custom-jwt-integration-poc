@@ -34,6 +34,23 @@ No JWKS endpoint is exposed. `jwks.json` is only a local representation of the p
 
 The login demonstrator deliberately receives blank `TENCENT_SECRET_ID` and `TENCENT_SECRET_KEY`; it can only use the locally signed JWT to obtain temporary STS credentials.
 
+## Run the full PoC
+
+The Compose file orders the services so that the configurator must complete successfully before the login demonstrator starts:
+
+```bash
+docker compose up --build
+```
+
+You can still run each phase independently:
+
+```bash
+docker compose run --rm configurator
+docker compose run --rm login-demo
+```
+
+The configurator is idempotent for the PoC: it reuses the local RSA key, updates an existing OIDC provider, waits until the provider is visible and enabled in CAM, and then creates or updates the role trust policy. It also retries Tencent's specific `InvalidParameter.PrincipalError` for a newly created provider, because role-principal resolution can lag behind successful provider creation.
+
 ## 1. Configure
 
 ```bash
@@ -134,23 +151,6 @@ The project intentionally does not automatically delete cloud-side trust configu
 ```bash
 rm -rf state/private-key.pem state/jwks.json state/poc-metadata.json
 ```
-
-## Run the full PoC
-
-The Compose file orders the services so that the configurator must complete successfully before the login demonstrator starts:
-
-```bash
-docker compose up --build
-```
-
-You can still run each phase independently:
-
-```bash
-docker compose run --rm configurator
-docker compose run --rm login-demo
-```
-
-The configurator is idempotent for the PoC: it reuses the local RSA key, updates an existing OIDC provider, waits until the provider is visible and enabled in CAM, and then creates or updates the role trust policy. It also retries Tencent's specific `InvalidParameter.PrincipalError` for a newly created provider, because role-principal resolution can lag behind successful provider creation.
 
 ## Architecture
 
