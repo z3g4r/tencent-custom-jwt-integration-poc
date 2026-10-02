@@ -180,3 +180,38 @@ The code is split by responsibility rather than placing all logic in two large `
 - `src/TencentOidcPoc.LoginDemo/Program.cs` - composition root for the actual federation demo.
 
 This keeps crypto, API transport, cloud orchestration and entry-point concerns separate and makes the components independently testable.
+
+## VS Code
+
+Open the repository root directly in VS Code:
+
+```bash
+code .
+```
+
+The repository includes `.vscode/` configuration for Linux/macOS development.
+
+Recommended extensions are offered automatically by VS Code:
+
+- C#
+- C# Dev Kit
+- Docker
+
+Available tasks (`Terminal` -> `Run Task...`):
+
+- `dotnet: build all` - builds both executables and the test harness.
+- `dotnet: test harness` - runs the local cryptographic/configuration checks.
+- `docker: build` - builds the Linux container image.
+- `docker: configurator` - runs the bootstrap configurator in Docker.
+- `docker: login demo` - runs the federated-login demonstrator in Docker.
+- `docker: full PoC` - runs configurator and login demo sequentially.
+- `docker: cleanup local state` - removes locally generated PoC key/JWKS/metadata state only; it does not delete Tencent resources.
+
+The `Run and Debug` view also contains:
+
+- `Debug Configurator (local .NET)`
+- `Debug Login Demo (local .NET)`
+
+Both use the repository `.env`. The login debug profile explicitly blanks `TENCENT_SECRET_ID` and `TENCENT_SECRET_KEY`, matching the Docker Compose security property: the login demonstration must succeed using only the JWT -> STS temporary-credential flow.
+
+The debug profiles execute locally with the .NET 8 SDK. The Docker tasks continue to use Linux containers only.
