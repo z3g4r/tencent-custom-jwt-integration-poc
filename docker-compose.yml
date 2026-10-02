@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: tencent-custom-jwt-poc:local
-    command: ["/app/configurator/TencentOidcPoc.Configurator.dll"]
+    command: [ "/app/configurator/TencentOidcPoc.Configurator.dll" ]
     env_file:
       - .env
     environment:
@@ -20,11 +20,12 @@ services:
       context: .
       dockerfile: Dockerfile
     image: tencent-custom-jwt-poc:local
-    command: ["/app/login-demo/TencentOidcPoc.LoginDemo.dll"]
+    command: [ "/app/login-demo/TencentOidcPoc.LoginDemo.dll" ]
     env_file:
       - .env
     environment:
       STATE_DIRECTORY: /state
+      #overwrite configuration from .env to make sure that the bootstrap credentials are unavailable for the login-demo container.
       TENCENT_SECRET_ID: ""
       TENCENT_SECRET_KEY: ""
     volumes:
