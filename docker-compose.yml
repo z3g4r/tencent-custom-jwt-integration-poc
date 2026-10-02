@@ -13,6 +13,9 @@ services:
       - ./state:/state
 
   login-demo:
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
     build:
       context: .
       dockerfile: Dockerfile

@@ -166,6 +166,24 @@ The project intentionally does not automatically delete cloud-side trust configu
 rm -rf state/private-key.pem state/jwks.json state/poc-metadata.json
 ```
 
+
+## Run the full PoC
+
+The Compose file orders the services so that the configurator must complete successfully before the login demonstrator starts:
+
+```bash
+docker compose up --build
+```
+
+You can still run each phase independently:
+
+```bash
+docker compose run --rm configurator
+docker compose run --rm login-demo
+```
+
+The configurator is idempotent for the PoC: it reuses the local RSA key, updates an existing OIDC provider, waits until the provider is visible and enabled in CAM, and then creates or updates the role trust policy. It also retries Tencent's specific `InvalidParameter.PrincipalError` for a newly created provider, because role-principal resolution can lag behind successful provider creation.
+
 ## Architecture
 
 The code is split by responsibility rather than placing all logic in two large `Program.cs` files:
