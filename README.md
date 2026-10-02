@@ -233,3 +233,15 @@ The `Run and Debug` view also contains:
 Both use the repository `.env`. The login debug profile explicitly blanks `TENCENT_SECRET_ID` and `TENCENT_SECRET_KEY`, matching the Docker Compose security property: the login demonstration must succeed using only the JWT -> STS temporary-credential flow.
 
 The debug profiles execute locally with the .NET 8 SDK. The Docker tasks continue to use Linux containers only.
+
+
+## Tencent CAM OIDC trust-policy compatibility
+
+This revision uses the trust-policy form documented by HashiCorp for Tencent Cloud dynamic OIDC credentials:
+
+```text
+principal: qcs::cam::uin/<ACCOUNT_UIN>:oidc-provider/<PROVIDER_NAME>
+action:    name/sts:AssumeRoleWithWebIdentity
+```
+
+This intentionally differs from some TKE-specific Tencent examples that use `oidcProvider` and omit the `name/` action prefix. The previous PoC variant using that TKE form was rejected by CAM with `InvalidParameter.PrincipalError` on a live account, so this revision follows the Tencent pattern used by HashiCorp's tested federation guidance.

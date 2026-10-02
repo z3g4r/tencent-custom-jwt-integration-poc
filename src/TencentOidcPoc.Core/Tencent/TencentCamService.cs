@@ -59,21 +59,18 @@ public sealed class TencentCamService
     {
         var policyDocument = BuildOidcTrustPolicy(accountId, providerName, issuer, audience, subject);
 
-        const int maxAttempts = 12;
-        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        Console.WriteLine($"OIDC trust principal: qcs::cam::uin/{accountId}:oidc-provider/{providerName}");
+        Console.WriteLine("Using CAM action: name/sts:AssumeRoleWithWebIdentity");
+
+        try
         {
-            try
-            {
-                await CreateOrUpdateRoleAsync(roleName, policyDocument, cancellationToken);
-                return;
-            }
-            catch (TencentApiException ex) when (IsPrincipalNotReady(ex) && attempt < maxAttempts)
-            {
-                Console.WriteLine(
-                    $"Tencent has not resolved the new OIDC provider as a role principal yet " +
-                    $"(attempt {attempt}/{maxAttempts}); retrying.");
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-            }
+            await CreateOrUpdateRoleAsync(roleName, policyDocument, cancellationToken);
+        }
+        catch (TencentApiException ex) when (IsPrincipalError(ex))
+        {
+            throw new InvalidOperationException(
+                $"Tencent rejected the OIDC role principal. Submitted trust policy: {policyDocument}. " +
+                $"Tencent error {ex.Code}: {ex.Message}", ex);
         }
     }
 
@@ -169,9 +166,9 @@ public sealed class TencentCamService
                     effect = "allow",
                     principal = new
                     {
-                        federated = new[] { $"qcs::cam::uin/{accountId}:oidcProvider/{providerName}" }
+                        federated = new[] { $"qcs::cam::uin/{accountId}:oidc-provider/{providerName}" }
                     },
-                    action = new[] { "sts:AssumeRoleWithWebIdentity" },
+                    action = new[] { "name/sts:AssumeRoleWithWebIdentity" },
                     condition = new
                     {
                         string_equal = new Dictionary<string, object>
@@ -209,8 +206,7 @@ public sealed class TencentCamService
         ex.Code.Contains("NotFound", StringComparison.OrdinalIgnoreCase) ||
         ex.Message.Contains("not exist", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsPrincipalNotReady(TencentApiException ex) =>
-        ex.Code.Equals("InvalidParameter.PrincipalError", StringComparison.OrdinalIgnoreCase) ||
-        (ex.Code.Contains("Principal", StringComparison.OrdinalIgnoreCase) &&
-         ex.Message.Contains("principal", StringComparison.OrdinalIgnoreCase));
+    private static bool IsPrincipalError(TencentApiException ex) =>
+        ex.Code.Contains("Principal", StringComparison.OrdinalIgnoreCase) ||
+        ex.Message.Contains("principal", StringComparison.OrdinalIgnoreCase);
 }

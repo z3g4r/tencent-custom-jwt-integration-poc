@@ -69,8 +69,8 @@ static void TestJwks()
 static void TestTrustPolicy()
 {
     var json = TencentCamService.BuildOidcTrustPolicy("123", "provider", "https://issuer", "aud", "sub");
-    Assert(json.Contains("qcs::cam::uin/123:oidcProvider/provider", StringComparison.Ordinal), "provider ARN missing");
-    Assert(json.Contains("sts:AssumeRoleWithWebIdentity", StringComparison.Ordinal), "web identity action missing");
+    Assert(json.Contains("qcs::cam::uin/123:oidc-provider/provider", StringComparison.Ordinal), "provider ARN missing");
+    Assert(json.Contains("name/sts:AssumeRoleWithWebIdentity", StringComparison.Ordinal), "web identity action missing");
     Assert(json.Contains("oidc:iss", StringComparison.Ordinal), "iss condition missing");
     Assert(json.Contains("oidc:aud", StringComparison.Ordinal), "aud condition missing");
     Assert(json.Contains("oidc:sub", StringComparison.Ordinal), "sub condition missing");
