@@ -1,6 +1,6 @@
 # Tencent Cloud custom JWT / static JWKS PoC
 
-Self-contained **C#/.NET 8** proof of concept running only in **Linux containers**.
+Self-contained **C#/.NET 8** proof of concept running  in **Linux containers**.
 
 It demonstrates this trust chain:
 
@@ -18,7 +18,7 @@ Login-demo container (no Tencent bootstrap secret)
   local RSA private key
         |
         +--> mint RS256 JWT (iss/aud/sub/kid)
-        +--> STS AssumeRoleWithWebIdentity (Authorization: SKIP)
+        +--> STS AssumeRoleWithWebIdentity
         +--> temporary SecretId/SecretKey/Token
         +--> STS GetCallerIdentity using temporary credentials
 ```
@@ -56,37 +56,6 @@ For a PoC, the defaults create:
 - role: `CustomJwtPocRole`
 
 `OIDC_ISSUER` is used as an identifier and becomes the JWT `iss` claim and the `oidc:iss` role condition. Tencent documents the IdP URL as a standard HTTP(S) URL and the role requires `oidc:iss` to equal the configured IdP URL. This PoC does not publish OIDC discovery or JWKS at that URL.
-
-
-## .NET project layout
-
-The repository intentionally does not use a Visual Studio solution file. It is an SDK-style .NET repository intended for `dotnet` CLI, Docker, Linux and macOS workflows:
-
-```text
-.
-├── Directory.Build.props
-├── global.json
-├── Dockerfile
-├── docker-compose.yml
-├── src/
-│   ├── TencentOidcPoc.Core/
-│   ├── TencentOidcPoc.Configurator/
-│   └── TencentOidcPoc.LoginDemo/
-└── tests/
-    └── TencentOidcPoc.Tests/
-```
-
-Common compiler settings are centralized in `Directory.Build.props`. Each application is built directly from its SDK-style `.csproj`; no `.sln` is required.
-
-For local development with the .NET SDK installed, you can build directly with:
-
-```bash
-dotnet build src/TencentOidcPoc.Configurator/TencentOidcPoc.Configurator.csproj
-dotnet build src/TencentOidcPoc.LoginDemo/TencentOidcPoc.LoginDemo.csproj
-dotnet run --project tests/TencentOidcPoc.Tests/TencentOidcPoc.Tests.csproj
-```
-
-The supported PoC execution path remains Docker Compose so runtime behavior is Linux-container-only.
 
 ## 2. Build
 
@@ -165,7 +134,6 @@ The project intentionally does not automatically delete cloud-side trust configu
 ```bash
 rm -rf state/private-key.pem state/jwks.json state/poc-metadata.json
 ```
-
 
 ## Run the full PoC
 
